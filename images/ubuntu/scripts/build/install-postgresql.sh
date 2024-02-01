@@ -20,10 +20,10 @@ toolset_version=$(get_toolset_value '.postgresql.version')
 # Install PostgreSQL
 echo "Install PostgreSQL"
 apt update
-apt install postgresql-$toolset_version
+apt install -y postgresql-$toolset_version
 
 echo "Install libpq-dev"
-apt-get install libpq-dev
+apt-get install -y libpq-dev
 
 # Disable postgresql.service
 systemctl is-active --quiet postgresql.service && systemctl stop postgresql.service
