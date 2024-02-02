@@ -181,6 +181,13 @@ build {
     inline = ["sudo apt-get install -y socat"]
   }
 
+
+  provisioner "shell" {
+   environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DOCKERHUB_LOGIN=${var.dockerhub_login}", "DOCKERHUB_PASSWORD=${var.dockerhub_password}"]
+   execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+   scripts          = ["${path.root}/../scripts/build/install-docker-compose.sh", "${path.root}/../scripts/build/install-docker.sh"]
+  }
+
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive", "SYSTEMD_SCRIPT_FOLDER=${var.systemd_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
@@ -250,13 +257,6 @@ build {
       "${path.root}/../scripts/build/install-zstd.sh"
     ]
   }
-
-  # FIXME: chgrp: cannot access '/run/docker.sock': No such file or directory
-  # provisioner "shell" {
-  #  environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DOCKERHUB_LOGIN=${var.dockerhub_login}", "DOCKERHUB_PASSWORD=${var.dockerhub_password}"]
-  #  execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-  #  scripts          = ["${path.root}/../scripts/build/install-docker-compose.sh", "${path.root}/../scripts/build/install-docker.sh"]
-  # }
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
