@@ -43,11 +43,6 @@ variable "installer_script_folder" {
   default = "/blacksmith/installers"
 }
 
-variable "systemd_script_folder" {
-  type    = string
-  default = "/blacksmith/systemd"
-}
-
 source "docker" "blacksmith" {
   image  = "ubuntu:22.04"
   commit = true
@@ -110,10 +105,6 @@ build {
     inline = ["mkdir -p ${var.installer_script_folder}"]
   }
 
-  provisioner "shell" {
-    inline = ["mkdir -p ${var.systemd_script_folder}"]
-  }
-
   provisioner "file" {
     destination = "${var.helper_script_folder}"
     source      = "${path.root}/../scripts/helpers/"
@@ -122,11 +113,6 @@ build {
   provisioner "file" {
     destination = "${var.installer_script_folder}"
     source      = "${path.root}/../scripts/build/"
-  }
-
-  provisioner "file" {
-    destination = "${var.systemd_script_folder}"
-    source      = "${path.root}/../scripts/systemd/"
   }
 
   provisioner "file" {
@@ -178,18 +164,16 @@ build {
   }
 
   provisioner "shell" {
-    inline = ["sudo apt-get install -y socat"]
-  }
-
-  provisioner "shell" {
-    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive", "SYSTEMD_SCRIPT_FOLDER=${var.systemd_script_folder}"]
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = [
-      # Keep these two above configure-blacksmith as the latter depends on
-      # dependencies installed by these two.
+# I believe this cache is meant to reduce the number of times we download
+# the actions runner tarball. Given that we're going to seed the rootfs with
+# the actions-runner binary in a wel defined place we probably don't need this.
+#      "${path.root}/../scripts/build/install-actions-cache.sh",
+# FIXME(adityamaru): Replace this script with our logic to install the runner.
+#     "${path.root}/../scripts/build/install-runner-package.sh",
       "${path.root}/../scripts/build/install-apt-common.sh",
-      "${path.root}/../scripts/build/install-postgresql.sh",
-      "${path.root}/../scripts/build/configure-blacksmith.sh",
       "${path.root}/../scripts/build/install-azcopy.sh",
       "${path.root}/../scripts/build/install-azure-cli.sh",
       "${path.root}/../scripts/build/install-azure-devops-cli.sh",
@@ -202,7 +186,6 @@ build {
       "${path.root}/../scripts/build/install-cmake.sh",
       "${path.root}/../scripts/build/install-codeql-bundle.sh",
       "${path.root}/../scripts/build/install-container-tools.sh",
-      # Fails with strange error, ignoring for now.
       # "${path.root}/../scripts/build/install-dotnetcore-sdk.sh",
       "${path.root}/../scripts/build/install-firefox.sh",
       "${path.root}/../scripts/build/install-microsoft-edge.sh",
@@ -232,6 +215,7 @@ build {
       "${path.root}/../scripts/build/install-bazel.sh",
       "${path.root}/../scripts/build/install-oras-cli.sh",
       "${path.root}/../scripts/build/install-php.sh",
+      "${path.root}/../scripts/build/install-postgresql.sh",
       "${path.root}/../scripts/build/install-pulumi.sh",
       "${path.root}/../scripts/build/install-ruby.sh",
       "${path.root}/../scripts/build/install-rlang.sh",
