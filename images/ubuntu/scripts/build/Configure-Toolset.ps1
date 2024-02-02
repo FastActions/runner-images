@@ -4,7 +4,7 @@
 ##  Desc:  Configure toolset
 ################################################################################
 
-Import-Module "$env:HELPER_SCRIPTS/Common.Helpers.psm1"
+Import-Module "$env:HELPER_SCRIPTS/../tests/Helpers.psm1"
 
 function Get-TCToolVersionPath {
     param(
@@ -80,4 +80,4 @@ foreach ($tool in $tools) {
     }
 }
 
-# Invoke-PesterTests -TestFile "Toolset" -TestName "Toolset"
+Invoke-PesterTests -TestFile "Toolset" -TestName "Toolset"

@@ -6,7 +6,7 @@
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
-Import-Module "$env:HELPER_SCRIPTS/Common.Helpers.psm1"
+Import-Module "$env:HELPER_SCRIPTS/../tests/Helpers.psm1"
 
 # Specifies the installation policy
 Set-PSRepository -InstallationPolicy Trusted -Name PSGallery
@@ -32,4 +32,4 @@ foreach($module in $modules) {
     }
 }
 
-# Invoke-PesterTests -TestFile "PowerShellModules" -TestName "PowerShellModules"
+Invoke-PesterTests -TestFile "PowerShellModules" -TestName "PowerShellModules"

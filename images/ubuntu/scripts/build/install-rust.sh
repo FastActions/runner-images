@@ -11,13 +11,6 @@ source $HELPER_SCRIPTS/os.sh
 export RUSTUP_HOME=/etc/skel/.rustup
 export CARGO_HOME=/etc/skel/.cargo
 
-export OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
-export OPENSSL_INCLUDE_DIR=/usr/include/openssl
-
-# Install OpenSSL development libraries
-sudo apt-get update
-sudo apt-get install -y libssl-dev
-
 curl -fsSL https://sh.rustup.rs | sh -s -- -y --default-toolchain=stable --profile=minimal
 
 # Initialize environment variables
