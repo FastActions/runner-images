@@ -11,12 +11,6 @@ export PATH="$PATH:/opt/pipx_bin"
 
 pipx_packages=$(get_toolset_value ".pipx[] .package")
 
-sudo apt-get install -y python3-pip
-python3 -m pip install --user pipx
-python3 -m pipx ensurepath
-
-export PATH="$HOME/.local/bin:$PATH"
-
 for package in $pipx_packages; do
     echo "Install $package into default python"
     pipx install $package
