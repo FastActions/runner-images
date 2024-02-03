@@ -3,6 +3,8 @@ Description=Setup and run Github Actions runner
 After=systemd-resolved.service
 
 [Service]
+StandardOutput=journal+console
+StandardError=journal+console
 EnvironmentFile=-/etc/environment
 ExecStart=/hostname_setup.sh
 ExecStart=/ip_setup.sh
