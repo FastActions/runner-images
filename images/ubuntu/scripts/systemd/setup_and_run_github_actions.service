@@ -3,8 +3,10 @@ Description=Setup and run Github Actions runner
 After=systemd-resolved.service
 
 [Service]
+EnvironmentFile=-/etc/environment
 ExecStart=/hostname_setup.sh
 ExecStart=/ip_setup.sh
+ExecStart=/install_mysql.sh
 ExecStart=/start_actions_runner.sh
 Type=oneshot
 RemainAfterExit=yes
