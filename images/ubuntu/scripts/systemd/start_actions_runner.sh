@@ -2,16 +2,16 @@
 
 set -e
 
-# Function to get JIT Metadata
-getJITMetadata() {
-    mmdsIPv4Addr="169.254.169.254"
+mmdsIPv4Addr="169.254.169.254"
+
+getMetadata() {
+    endpoint=$1
     putTokenOutput=$(curl -X PUT "http://${mmdsIPv4Addr}/latest/api/token" -H "X-metadata-token-ttl-seconds: 21600")
     token=${putTokenOutput}
-    getJitOutput=$(curl -s "http://${mmdsIPv4Addr}/jit" -H "X-metadata-token: ${token}")
-    echo ${getJitOutput}
+    getOutput=$(curl -s "http://${mmdsIPv4Addr}/${endpoint}" -H "X-metadata-token: ${token}")
+    echo ${getOutput}
 }
 
-# Function to run Actions Runner
 runActionsRunner() {
     jit=$1
     RUNNER_ALLOW_RUNASROOT=1  ./root/runner/run.sh --jitconfig ${jit}
@@ -21,30 +21,45 @@ runActionsRunner() {
     fi
 }
 
-# Retry parameters
+retryCommand() {
+    local max_attempts=$1
+    local sleep_time=$2
+    local command=$3
+    local attempt=0
+    local result
+
+    while [ $attempt -lt $max_attempts ]; do
+        result=$(eval $command)
+        local status=$?
+        if [ $status -eq 0 ] && [ ! -z "$result" ]; then
+            echo $result
+            return 0
+        else
+            echo "Attempt $attempt failed, retrying in $sleep_time seconds..."
+            attempt=$((attempt+1))
+            sleep $sleep_time
+        fi
+    done
+
+    echo "Failed to execute command after $max_attempts attempts"
+    return 1
+}
+
 max_attempts=5
-attempt=0
-sleep_time=3 # 15 seconds of retries
+sleep_time=3 # seconds of retries
 
-while [ $attempt -lt $max_attempts ]; do
-    jit=$(getJITMetadata)
-    if [ $? -eq 0 ] && [ ! -z "$jit" ]; then
-        break
-    else
-        echo "Could not execute GET JIT from MMDS, attempt $attempt"
-        attempt=$((attempt+1))
-        sleep $sleep_time
-    fi
-done
+jit=$(retryCommand $max_attempts $sleep_time "getMetadata jit") || exit 1
+cacheURL=$(retryCommand $max_attempts $sleep_time "getMetadata cacheURL") || exit 1
+cacheToken=$(retryCommand $max_attempts $sleep_time "getMetadata cacheToken") || exit 1
+repo=$(retryCommand $max_attempts $sleep_time "getMetadata repo") || exit 1
 
-if [ $attempt -eq $max_attempts ]; then
-    echo "Failed to execute GET JIT from MMDS after $max_attempts attempts"
-    exit 1
-fi
-
-
+export "BLACKSMITH_CACHE_URL=${cacheURL}"
+export "BLACKSMITH_CACHE_TOKEN=${cacheToken}"
+export "GITHUB_REPO_NAME=${repo}"
 export ACTIONS_RUNNER_HOOK_JOB_STARTED="/setup.sh"
 export HOME=/root
 export PATH=/root/.cargo/bin:/root/.cabal/bin:/root/.ghcup/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/opt/maven/apache-maven-3.8.8/bin:/root/miniconda3/bin:/usr/share/swift/usr/bin:/root/.sdkman/candidates/kotlin/current/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/root/.local/bin:/root/.pulumi/bin:/root/.local/bin
+
 runActionsRunner ${jit}
+
 reboot
