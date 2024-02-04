@@ -26,9 +26,6 @@ chmod +x /hostname_setup.sh
 cp $SYSTEMD_SCRIPT_FOLDER/setup_dns.sh /setup_dns.sh
 chmod +x /setup_dns.sh
 
-cp $SYSTEMD_SCRIPT_FOLDER/install_mysql.sh /install_mysql.sh
-chmod +x /install_mysql.sh
-
 cp $SYSTEMD_SCRIPT_FOLDER/start_actions_runner.sh /start_actions_runner.sh
 chmod +x /start_actions_runner.sh
 
