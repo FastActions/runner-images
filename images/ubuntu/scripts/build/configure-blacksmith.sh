@@ -29,11 +29,6 @@ chmod +x /setup_dns.sh
 cp $SYSTEMD_SCRIPT_FOLDER/start_actions_runner.sh /start_actions_runner.sh
 chmod +x /start_actions_runner.sh
 
-# Change the default port at which systemd starts the postgresql service.
-# This is done to avoid conflicts with the postgresql service that may be created
-# by the github actions runner.
-sed -i 's/port = 5432/port = 53214/' /etc/postgresql/14/main/postgresql.conf
-
 # Disable the start of mysql server on startup so that workflows
 # can start their own mysql servers.
 sudo systemctl disable mysql
