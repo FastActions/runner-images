@@ -58,7 +58,6 @@ export "BLACKSMITH_CACHE_TOKEN=${cacheToken}"
 export "GITHUB_REPO_NAME=${repo}"
 export ACTIONS_RUNNER_HOOK_JOB_STARTED="/setup.sh"
 export HOME=/root
-export PATH=/root/.cargo/bin:/root/.cabal/bin:/root/.ghcup/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/opt/maven/apache-maven-3.8.8/bin:/root/miniconda3/bin:/usr/share/swift/usr/bin:/root/.sdkman/candidates/kotlin/current/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/root/.local/bin:/root/.pulumi/bin:/root/.local/bin
 
 runActionsRunner ${jit}
 
