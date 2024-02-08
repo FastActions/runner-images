@@ -14,7 +14,7 @@ getMetadata() {
 
 runActionsRunner() {
     jit=$1
-    RUNNER_ALLOW_RUNASROOT=1  ./root/runner/run.sh --jitconfig ${jit}
+    RUNNER_ALLOW_RUNASROOT=1  ./run.sh --jitconfig ${jit}
     if [ $? -ne 0 ]; then
         echo "Could not start actions runner"
         exit 1

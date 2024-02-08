@@ -8,6 +8,9 @@ apt-get install -y systemd && \
 apt-get clean && \
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+cp $SYSTEMD_SCRIPT_FOLDER/setup.service /etc/systemd/system/setup.service
+systemctl enable setup.service
+
 cp $SYSTEMD_SCRIPT_FOLDER/setup_and_run_github_actions.service /etc/systemd/system/setup_and_run_github_actions.service
 systemctl enable setup_and_run_github_actions.service
 
@@ -26,17 +29,13 @@ chmod +x /setup_dns.sh
 cp $SYSTEMD_SCRIPT_FOLDER/start_actions_runner.sh /start_actions_runner.sh
 chmod +x /start_actions_runner.sh
 
-# Disable the start of mysql server on startup so that workflows
-# can start their own mysql servers.
-sudo systemctl disable mysql
-
 # Create a runner user that will be used to run the
 # github action workflow.
 echo 'Create runner user'
 adduser --disabled-password --gecos "" runner
 echo 'runner:runner' | chpasswd
 echo 'runner ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-usermod -aG sudo,adm,docker,systemd-journal runner
+usermod -aG sudo,adm,systemd-journal runner
 
 # Replace $HOME with the default user's home directory for environmental variables
 # related to the default user home directory.
@@ -65,7 +64,7 @@ chmod +x /setup.sh
 # it is accessible to the `runner` user we created above.
 RUNNER_VERSION=2.311.0
 set_etc_environment_variable "RUNNER_VERSION" "${RUNNER_VERSION}"
-cd /runner
+cd /home/runner
 wget https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
     tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
     rm actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz

@@ -1,14 +1,13 @@
 [Unit]
-Description=Run Github Actions runner
-After=setup.service
+Description=Setup for Github Actions runner
+After=systemd-resolved.service
 
 [Service]
-User=runner
-WorkingDirectory=/home/runner
 StandardOutput=journal+console
 StandardError=journal+console
 EnvironmentFile=-/etc/environment
-ExecStart=/start_actions_runner.sh
+ExecStart=/hostname_setup.sh
+ExecStart=/ip_setup.sh
 Type=oneshot
 RemainAfterExit=yes
 
