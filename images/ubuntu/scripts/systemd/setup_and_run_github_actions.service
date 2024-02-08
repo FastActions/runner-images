@@ -3,6 +3,7 @@ Description=Setup and run Github Actions runner
 After=systemd-resolved.service
 
 [Service]
+User=runner
 StandardOutput=journal+console
 StandardError=journal+console
 EnvironmentFile=-/etc/environment

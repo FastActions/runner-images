@@ -53,11 +53,12 @@ cacheURL=$(retryCommand $max_attempts $sleep_time "getMetadata cacheURL") || exi
 cacheToken=$(retryCommand $max_attempts $sleep_time "getMetadata cacheToken") || exit 1
 repo=$(retryCommand $max_attempts $sleep_time "getMetadata repo") || exit 1
 
+homeDir=$(grep '^runner:' /etc/passwd | cut -d: -f6)
+export HOME=$homeDir
 export "BLACKSMITH_CACHE_URL=${cacheURL}"
 export "BLACKSMITH_CACHE_TOKEN=${cacheToken}"
 export "GITHUB_REPO_NAME=${repo}"
 export ACTIONS_RUNNER_HOOK_JOB_STARTED="/setup.sh"
-export HOME=/root
 
 runActionsRunner ${jit}
 
