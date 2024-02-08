@@ -196,6 +196,7 @@ build {
       # dependencies installed by these two.
       "${path.root}/../scripts/build/install-apt-common.sh",
       "${path.root}/../scripts/build/install-postgresql.sh",
+      "${path.root}/../scripts/build/install-bpftrace-dbgsym.sh",
       "${path.root}/../scripts/build/configure-blacksmith.sh",
       "${path.root}/../scripts/build/install-azcopy.sh",
       "${path.root}/../scripts/build/install-azure-cli.sh",
