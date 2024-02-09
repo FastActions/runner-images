@@ -173,9 +173,10 @@ build {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive", "SYSTEMD_SCRIPT_FOLDER=${var.systemd_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = [
-      "${path.root}/../scripts/build/install-actions-cache.sh",
-      "${path.root}/../scripts/build/install-runner-package.sh",
-      "${path.root}/../scripts/build/install-rust.sh",
+#      "${path.root}/../scripts/build/install-actions-cache.sh",
+#      "${path.root}/../scripts/build/install-runner-package.sh",
+#      "${path.root}/../scripts/build/install-rust.sh",
+       "${path.root}/../scripts/build/install-docker.sh",
     ]
   }
 
