@@ -48,6 +48,11 @@ variable "systemd_script_folder" {
   default = "/blacksmith/systemd"
 }
 
+variable "misc_script_folder" {
+  type    = string
+  default = "/blacksmith/misc"
+}
+
 source "docker" "blacksmith" {
   image  = "ubuntu:22.04"
   commit = true
@@ -90,16 +95,13 @@ build {
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = [
       "${path.root}/../scripts/build/install-ms-repos.sh",
+      "${path.root}/../scripts/build/configure-apt.sh"
     ]
   }
 
-
   provisioner "shell" {
-    inline = ["apt-get update", "apt-get install -y jq"]
-  }
-
-  provisioner "shell" {
-    inline = ["bash -c \"$(curl -fsSL https://raw.githubusercontent.com/ilikenwf/apt-fast/master/quick-install.sh)\""]
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    script          = "${path.root}/../scripts/build/configure-limits.sh"
   }
 
   provisioner "shell" {
@@ -112,6 +114,10 @@ build {
 
   provisioner "shell" {
     inline = ["mkdir -p ${var.systemd_script_folder}"]
+  }
+
+  provisioner "shell" {
+    inline = ["mkdir -p ${var.misc_script_folder}"]
   }
 
   provisioner "file" {
@@ -130,8 +136,24 @@ build {
   }
 
   provisioner "file" {
+    destination = "${var.misc_script_folder}"
+    sources     = [
+      "${path.root}/../assets/post-gen",
+      "${path.root}/../scripts/tests",
+      "${path.root}/../scripts/docs-gen"
+    ]
+  }
+
+  provisioner "file" {
     destination = "${var.installer_script_folder}/toolset.json"
     source      = "${path.root}/../toolsets/toolset-2204.json"
+  }
+
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = [
+      "mv ${var.misc_script_folder}/post-gen ${var.misc_script_folder}/post-generation"
+    ]
   }
 
   provisioner "shell" {
@@ -158,46 +180,15 @@ build {
     scripts          = ["${path.root}/../scripts/build/Install-PowerShellModules.ps1"]
   }
 
-
-  provisioner "shell" {
-    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
-    execute_command  = "sudo sh -c '{{ .Vars }} pwsh -f {{ .Path }}'"
-    scripts          = ["${path.root}/../scripts/build/Install-Toolset.ps1", "${path.root}/../scripts/build/Configure-Toolset.ps1"]
-  }
-  
-  provisioner "shell" {
-    inline = ["sudo apt-get install -y libdigest-sha-perl"]
-  }
-  
-  provisioner "shell" {
-    inline = ["sudo apt-get install -y zip"]
-  }
-  
-  provisioner "shell" {
-    inline = ["sudo apt-get -y install python3-venv"]
-  }
-
-  provisioner "shell" {
-    inline = ["sudo apt-get install -y socat"]
-  }
-
-
-  provisioner "shell" {
-   environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DOCKERHUB_LOGIN=${var.dockerhub_login}", "DOCKERHUB_PASSWORD=${var.dockerhub_password}"]
-   execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-   scripts          = ["${path.root}/../scripts/build/install-docker-compose.sh", "${path.root}/../scripts/build/install-docker.sh"]
-  }
-
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive", "SYSTEMD_SCRIPT_FOLDER=${var.systemd_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = [
-      # Keep these two above configure-blacksmith as the latter depends on
-      # dependencies installed by these two.
+      "${path.root}/../scripts/build/install-actions-cache.sh",
+      "${path.root}/../scripts/build/install-runner-package.sh",
       "${path.root}/../scripts/build/install-apt-common.sh",
       "${path.root}/../scripts/build/install-postgresql.sh",
       "${path.root}/../scripts/build/install-bpftrace-dbgsym.sh",
-      "${path.root}/../scripts/build/configure-blacksmith.sh",
       "${path.root}/../scripts/build/install-azcopy.sh",
       "${path.root}/../scripts/build/install-azure-cli.sh",
       "${path.root}/../scripts/build/install-azure-devops-cli.sh",
@@ -260,6 +251,18 @@ build {
   }
 
   provisioner "shell" {
+   environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DOCKERHUB_LOGIN=${var.dockerhub_login}", "DOCKERHUB_PASSWORD=${var.dockerhub_password}"]
+   execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+   scripts          = ["${path.root}/../scripts/build/install-docker-compose.sh", "${path.root}/../scripts/build/install-docker.sh"]
+  }
+
+  provisioner "shell" {
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} pwsh -f {{ .Path }}'"
+    scripts          = ["${path.root}/../scripts/build/Install-Toolset.ps1", "${path.root}/../scripts/build/Configure-Toolset.ps1"]
+  }
+
+  provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = ["${path.root}/../scripts/build/install-pipx-packages.sh"]
@@ -272,9 +275,40 @@ build {
   }
 
   provisioner "shell" {
+    inline = ["sudo apt-get install -y libdigest-sha-perl"]
+  }
+  
+  provisioner "shell" {
+    inline = ["sudo apt-get install -y zip"]
+  }
+  
+  provisioner "shell" {
+    inline = ["sudo apt-get -y install python3-venv"]
+  }
+
+  provisioner "shell" {
+    inline = ["sudo apt-get install -y socat"]
+  }
+
+
+  provisioner "shell" {
     execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     pause_before        = "1m0s"
     scripts             = ["${path.root}/../scripts/build/cleanup.sh"]
     start_retry_timeout = "10m"
+  }
+
+  provisioner "shell" {
+    environment_vars = ["HELPER_SCRIPT_FOLDER=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "IMAGE_FOLDER=${var.misc_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = ["${path.root}/../scripts/build/configure-system.sh"]
+  }
+
+  provisioner "shell" {
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive", "SYSTEMD_SCRIPT_FOLDER=${var.systemd_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/build/configure-blacksmith.sh"
+    ]
   }
 }
