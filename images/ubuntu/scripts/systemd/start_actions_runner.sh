@@ -62,4 +62,4 @@ export ACTIONS_RUNNER_HOOK_JOB_STARTED="/setup.sh"
 
 runActionsRunner ${jit}
 
-reboot
+sudo reboot
