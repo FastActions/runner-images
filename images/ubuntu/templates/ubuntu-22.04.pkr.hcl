@@ -54,8 +54,9 @@ variable "misc_script_folder" {
 }
 
 source "docker" "blacksmith" {
-  image  = "ubuntu:22.04"
+  image  = "cruizba/ubuntu-dind:jammy-25.0.3"
   commit = true
+  privilegd = true
 }
 
 build {
