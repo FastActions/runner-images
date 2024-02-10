@@ -35,7 +35,7 @@ echo 'Create runner user'
 adduser --disabled-password --gecos "" runner
 echo 'runner:runner' | chpasswd
 echo 'runner ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-usermod -aG sudo,adm,systemd-journal runner
+usermod -aG sudo,docker,adm,systemd-journal runner
 
 # Replace $HOME with the default user's home directory for environmental variables
 # related to the default user home directory.
