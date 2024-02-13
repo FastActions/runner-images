@@ -28,6 +28,7 @@ set_default_clang() {
 versions=$(get_toolset_value '.clang.versions[]')
 default_clang_version=$(get_toolset_value '.clang.default_version')
 
+apt-get update
 for version in ${versions[*]}; do
     if [[ $version != $default_clang_version ]]; then
         install_clang $version
