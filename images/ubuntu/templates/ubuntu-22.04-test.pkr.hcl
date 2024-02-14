@@ -77,6 +77,14 @@ build {
   provisioner "shell" {
     inline = ["apt-get update", "apt-get install -y sudo"]
   }
+
+  provisioner "shell" {
+    inline = ["apt-get update", "apt-get install -y libclang-dev"]
+  }
+
+  provisioner "shell" {
+    inline = ["apt-get update", "apt-get install -y clang-11 llvm-11"]
+  }
  
   provisioner "shell" {
     inline = ["apt-get update", "apt-get install -y lsb-release"]
