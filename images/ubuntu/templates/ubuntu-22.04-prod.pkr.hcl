@@ -54,7 +54,7 @@ variable "misc_script_folder" {
 }
 
 source "docker" "blacksmith" {
-  image  = "blacksmithcihello/rootfs-packer:090224-3"
+  image  = "blacksmithcihello/rootfs-packer:130224-3"
   commit = true
   privileged = true
 }
@@ -73,13 +73,5 @@ build {
       login_username = var.DOCKER_USERNAME
       login_password = var.DOCKER_ACCESS_TOKEN
     }
-  }
-
-  provisioner "shell" {
-    inline = ["apt-get update", "apt-get install -y libclang-dev"]
-  }
-
-  provisioner "shell" {
-    inline = ["apt-get update", "apt-get install -y clang-11 llvm-11"]
   }
 }
