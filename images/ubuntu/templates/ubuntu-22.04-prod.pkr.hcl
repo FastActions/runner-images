@@ -54,7 +54,7 @@ variable "misc_script_folder" {
 }
 
 source "docker" "blacksmith" {
-  image  = "blacksmithcihello/rootfs-packer:130224-3"
+  image  = "blacksmithcihello/rootfs-packer:150224-2"
   commit = true
   privileged = true
 }
@@ -76,10 +76,6 @@ build {
   }
 
   provisioner "shell" {
-    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
-    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = [
-      "${path.root}/../scripts/build/configure-apt-sources.sh",
-    ]
+    inline = ["rm -rf /etc/apt/sources.list.d/ddebs.list", "apt update"]
   }
 }
