@@ -105,6 +105,7 @@ build {
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = [
       "${path.root}/../scripts/build/install-ms-repos.sh",
+      "${path.root}/../scripts/build/configure-apt-sources.sh",
       "${path.root}/../scripts/build/configure-apt.sh"
     ]
   }
@@ -198,7 +199,6 @@ build {
       "${path.root}/../scripts/build/install-runner-package.sh",
       "${path.root}/../scripts/build/install-apt-common.sh",
       "${path.root}/../scripts/build/install-postgresql.sh",
-      "${path.root}/../scripts/build/install-bpftrace-dbgsym.sh",
       "${path.root}/../scripts/build/install-azcopy.sh",
       "${path.root}/../scripts/build/install-azure-cli.sh",
       "${path.root}/../scripts/build/install-azure-devops-cli.sh",

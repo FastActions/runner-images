@@ -54,7 +54,7 @@ variable "misc_script_folder" {
 }
 
 source "docker" "blacksmith" {
-  image  = "blacksmithcihello/rootfs-packer:090224-3"
+  image  = "blacksmithcihello/rootfs-packer:150224-2"
   commit = true
   privileged = true
 }
@@ -76,10 +76,6 @@ build {
   }
 
   provisioner "shell" {
-    inline = ["apt-get update", "apt-get install -y libclang-dev"]
-  }
-
-  provisioner "shell" {
-    inline = ["apt-get update", "apt-get install -y clang-11 llvm-11"]
+    inline = ["rm -rf /etc/apt/sources.list.d/ddebs.list", "apt update"]
   }
 }
