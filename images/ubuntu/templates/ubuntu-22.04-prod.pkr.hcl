@@ -73,5 +73,13 @@ build {
       login_username = var.DOCKER_USERNAME
       login_password = var.DOCKER_ACCESS_TOKEN
     }
+
+    provisioner "shell" {
+    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/build/configure-apt-sources.sh",
+    ]
+  }
   }
 }
