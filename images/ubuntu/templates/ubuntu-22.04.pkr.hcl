@@ -257,6 +257,7 @@ build {
       "${path.root}/../scripts/build/install-pypy.sh",
       "${path.root}/../scripts/build/install-python.sh",
       "${path.root}/../scripts/build/install-zstd.sh"
+      "${path.root}/../scripts/build/setup-swap-file.sh"
     ]
   }
 
