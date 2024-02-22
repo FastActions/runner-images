@@ -45,6 +45,10 @@ retryCommand() {
     return 1
 }
 
+# Enable swap on the swap file.
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
 max_attempts=5
 sleep_time=3 # seconds of retries
 

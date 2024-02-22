@@ -54,7 +54,7 @@ variable "misc_script_folder" {
 }
 
 source "docker" "blacksmith" {
-  image  = "blacksmithcihello/rootfs-packer:150224-2"
+  image  = "blacksmithcihello/rootfs-packer:150224-3"
   commit = true
   privileged = true
 }
@@ -75,7 +75,16 @@ build {
     }
   }
 
+  provisioner "file" {
+    destination = "${var.systemd_script_folder}"
+    source      = "${path.root}/../scripts/systemd/"
+  }
+
   provisioner "shell" {
-    inline = ["rm -rf /etc/apt/sources.list.d/ddebs.list", "apt update"]
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive", "SYSTEMD_SCRIPT_FOLDER=${var.systemd_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/build/setup-swap-file.sh",
+	]
   }
 }
