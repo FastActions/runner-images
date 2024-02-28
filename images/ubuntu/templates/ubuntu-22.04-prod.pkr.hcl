@@ -54,7 +54,7 @@ variable "misc_script_folder" {
 }
 
 source "docker" "blacksmith" {
-  image  = "blacksmithcihello/rootfs-packer:220224-3"
+  image  = "blacksmithcihello/rootfs-packer:220224-4"
   commit = true
   privileged = true
 }
@@ -76,14 +76,15 @@ build {
   }
 
   provisioner "file" {
-    destination = "${var.systemd_script_folder}"
-    source      = "${path.root}/../scripts/systemd/"
+    destination = "${var.installer_script_folder}"
+    source      = "${path.root}/../scripts/build"
   }
 
   provisioner "shell" {
-    inline = [
-        "cp /blacksmith/systemd/ip_setup.sh /ip_setup.sh",
-        "chmod +x /ip_setup.sh"
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/build/bump-runner-version.sh",
     ]
   }
 }
