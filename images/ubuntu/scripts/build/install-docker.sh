@@ -40,8 +40,8 @@ for plugin in $plugins; do
     filter=$(get_toolset_value ".docker.plugins[] | select(.plugin == \"$plugin\") | .asset")
     url=$(resolve_github_release_asset_url "docker/$plugin" "endswith(\"$filter\")" "$version")
     binary_path=$(download_with_retry "$url" "/tmp/docker-$plugin")
-    mkdir -pv "/usr/libexec/docker/cli-plugins"
-    install "$binary_path" "/usr/libexec/docker/cli-plugins/docker-$plugin"
+    mkdir -pv "/usr/local/lib/docker/cli-plugins"
+    install "$binary_path" "/usr/local/lib/docker/cli-plugins/docker-$plugin"
 done
 
 
