@@ -14,33 +14,36 @@ REPO_PATH="/etc/apt/sources.list.d/docker.list"
 os_codename=$(lsb_release -cs)
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o $GPG_KEY
-echo "deb [arch=amd64 signed-by=$GPG_KEY] $REPO_URL ${os_codename} stable" > $REPO_PATH
+echo "deb [arch=amd64 signed-by=$GPG_KEY] $REPO_URL ${os_codename} stable" >$REPO_PATH
 apt-get update
 
-for pkg in containerd.io docker-ce-cli docker-ce docker-buildx-plugin; do
-    version=$(get_toolset_value ".docker.components.\"$pkg\"")
+# Install docker components which available via apt-get
+# Using toolsets keep installation order to install dependencies before the package in order to control versions
+
+components=$(get_toolset_value '.docker.components[] .package')
+for package in $components; do
+    version=$(get_toolset_value ".docker.components[] | select(.package == \"$package\") | .version")
     if [[ $version == "latest" ]]; then
-        components_to_install+="${pkg} "
+        apt-get install -y --no-install-recommends "$package"
     else
-        version_string=$(apt-cache madison "${pkg}" | awk '{ print $3 }' | grep "${version}" | grep "${os_codename}" | head -1)
-        components_to_install+="${pkg}=${version_string} "
+        version_string=$(apt-cache madison "$package" | awk '{ print $3 }' | grep "$version" | grep "$os_codename" | head -1)
+        apt-get install -y --no-install-recommends "${package}=${version_string}"
     fi
 done
-apt-get install -y --no-install-recommends $components_to_install
 
-# Download docker compose v2 from releases
-# Temporaty pinned to v2.23.3 due https://github.com/actions/runner-images/issues/9172
-compose_version=$(get_toolset_value ".docker.components.compose")
-URL=$(resolve_github_release_asset_url "docker/compose" "endswith(\"compose-linux-x86_64\")" "${compose_version}")
-compose_binary_path=$(download_with_retry "${URL}" "/tmp/docker-compose-v2")
+# Install plugins that are best installed from the GitHub repository
+# Be aware that `url` built from github repo name and plugin name because of current repo naming for those plugins
 
-# Supply chain security - Docker Compose v2
-compose_hash_url=$(resolve_github_release_asset_url "docker/compose" "endswith(\"checksums.txt\")" "${compose_version}")
-compose_external_hash=$(get_checksum_from_url "${compose_hash_url}" "compose-linux-x86_64" "SHA256")
-use_checksum_comparison "${compose_binary_path}" "${compose_external_hash}"
+plugins=$(get_toolset_value '.docker.plugins[] .plugin')
+for plugin in $plugins; do
+    version=$(get_toolset_value ".docker.plugins[] | select(.plugin == \"$plugin\") | .version")
+    filter=$(get_toolset_value ".docker.plugins[] | select(.plugin == \"$plugin\") | .asset")
+    url=$(resolve_github_release_asset_url "docker/$plugin" "endswith(\"$filter\")" "$version")
+    binary_path=$(download_with_retry "$url" "/tmp/docker-$plugin")
+    mkdir -pv "/usr/local/lib/docker/cli-plugins"
+    install "$binary_path" "/usr/local/lib/docker/cli-plugins/docker-$plugin"
+done
 
-# Install docker compose v2
-install "${compose_binary_path}" /usr/libexec/docker/cli-plugins/docker-compose
 
 # Docker daemon takes time to come up after installing
 sudo dockerd &
@@ -52,24 +55,24 @@ groupmod -g $gid docker
 chgrp -hR docker /run/docker.sock
 
 if [[ "${DOCKERHUB_PULL_IMAGES:-yes}" == "yes" ]]; then
-	    # If credentials are provided, attempt to log into Docker Hub
-	        # with a paid account to avoid Docker Hub's rate limit.
-		    if [[ "${DOCKERHUB_LOGIN}" ]] && [[ "${DOCKERHUB_PASSWORD}" ]]; then
-			            docker login --username "${DOCKERHUB_LOGIN}" --password "${DOCKERHUB_PASSWORD}"
-				        fi
+	# If credentials are provided, attempt to log into Docker Hub
+	# with a paid account to avoid Docker Hub's rate limit.
+	if [[ "${DOCKERHUB_LOGIN}" ]] && [[ "${DOCKERHUB_PASSWORD}" ]]; then
+		docker login --username "${DOCKERHUB_LOGIN}" --password "${DOCKERHUB_PASSWORD}"
+	fi
 
-					    # Pull images
-					        images=$(get_toolset_value '.docker.images[]')
-						    for image in $images; do
-							            docker pull "$image"
-								        done
+	# Pull images
+	images=$(get_toolset_value '.docker.images[]')
+	for image in $images; do
+		docker pull "$image"
+	done
 
-									    # Always attempt to logout so we do not leave our credentials on the built
-									        # image. Logout _should_ return a zero exit code even if no credentials were
-										    # stored from earlier.
-										        docker logout
-										else
-											    echo "Skipping docker images pulling"
+	# Always attempt to logout so we do not leave our credentials on the built
+	# image. Logout _should_ return a zero exit code even if no credentials were
+	# stored from earlier.
+	docker logout
+else
+	echo "Skipping docker images pulling"
 fi
 
 # Download amazon-ecr-credential-helper
