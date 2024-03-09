@@ -1,3 +1,5 @@
+# HACK: If a full rootfs build is ever needed
+# please ensure that you also run `patch-docker.sh`
 packer {
   required_plugins {
     docker = {
