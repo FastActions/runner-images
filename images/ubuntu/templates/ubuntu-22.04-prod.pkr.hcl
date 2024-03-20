@@ -75,8 +75,7 @@ build {
     }
   }
 
-  provisioner "file" {
-    destination = "${var.installer_script_folder}"
-    source      = "${path.root}/../scripts/build"
+  provisioner "shell" {
+    inline = ["systemctl disable mysql.service"]
   }
 }
