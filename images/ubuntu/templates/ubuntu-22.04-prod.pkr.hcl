@@ -54,7 +54,7 @@ variable "misc_script_folder" {
 }
 
 source "docker" "blacksmith" {
-  image  = "blacksmithcihello/rootfs-packer:010324-4"
+  image  = "blacksmithcihello/rootfs-packer:110324-1"
   commit = true
   privileged = true
 }
@@ -78,13 +78,5 @@ build {
   provisioner "file" {
     destination = "${var.installer_script_folder}"
     source      = "${path.root}/../scripts/build"
-  }
-
-  provisioner "shell" {
-    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive"]
-    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = [
-      "${path.root}/../scripts/build/install-bpftool.sh",
-    ]
   }
 }

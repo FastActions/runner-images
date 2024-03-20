@@ -11,7 +11,7 @@ sudo apt-get install -y libelf-dev
 # Install llvm.
 sudo apt-get install -y llvm
 
-rm /usr/sbin/bpftool
+rm /usr/sbin/bpftool || true
 
 sudo apt update && sudo apt install -y git
 cd / && sudo git clone --recurse-submodules https://github.com/libbpf/bpftool.git
